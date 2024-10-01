@@ -12,7 +12,7 @@ export function createMerkleTree(headers: Header[]) {
       blockHash: hdr.hash.toHex(),
       header: hdr.toHex(),
     };
-    const hash = SHA256(JSON.stringify(data));
+    const hash = SHA256(JSON.stringify(data)).toString();
     return { data, hash };
   });
 
@@ -22,4 +22,17 @@ export function createMerkleTree(headers: Header[]) {
 
   merkleTrees.push({ tree: merkleTree, leaves });
   merkleRoots.push(root);
+}
+
+export function getMerkleProof(headerData: Header): string[] | null {
+  const leafHash = SHA256(JSON.stringify(headerData)).toString();
+
+  for (const { tree, leaves } of merkleTrees) {
+    const index = leaves.findIndex((leaf) => leaf.hash.equals(leafHash));
+    if (index !== -1) {
+      const proof = tree.getProof(leafHash).map((p) => p.data.toString("hex"));
+      return proof;
+    }
+  }
+  return null;
 }
