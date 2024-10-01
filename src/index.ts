@@ -1,7 +1,8 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
+import { Header } from "@polkadot/types/interfaces";
 import * as MerkleUtils from "./utils/merkle-tree";
 
-let blockHeaderBatch: string[] = [];
+let blockHeaderBatch: Header[] = [];
 const BATCH_SIZE = 5;
 
 async function main() {
@@ -15,14 +16,14 @@ async function main() {
   api.rpc.chain.subscribeNewHeads((header) => {
     console.log(`Block number: ${header.number}, Hash: ${header.hash}`);
 
-    addBlockToBatch(header.hash.toHex());
+    addBlockToBatch(header);
   });
 }
 
-function addBlockToBatch(header: string) {
+function addBlockToBatch(header: Header) {
   blockHeaderBatch.push(header);
 
-  if (blockHeaderBatch.length >= BATCH_SIZE) {
+  if (blockHeaderBatch.length === BATCH_SIZE) {
     MerkleUtils.createMerkleTree(blockHeaderBatch);
     blockHeaderBatch = [];
   }
