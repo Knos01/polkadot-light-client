@@ -62,3 +62,27 @@ export function formatLeaf(headerData: Header): {
   const hash = SHA256(JSON.stringify(data)).toString();
   return { data, hash };
 }
+
+export function getHeaderByBlockNumber(blockNumber: number): LeafData | null {
+  for (const { leaves } of merkleTrees) {
+    for (const leaf of leaves) {
+      if (leaf.data.blockNumber === blockNumber) {
+        return leaf.data;
+      }
+    }
+  }
+  console.warn(`Header not found for block number: ${blockNumber}`);
+  return null;
+}
+
+export function getHeaderByBlockHash(blockHash: string): LeafData | null {
+  for (const { leaves } of merkleTrees) {
+    for (const leaf of leaves) {
+      if (leaf.data.blockHash === blockHash) {
+        return leaf.data;
+      }
+    }
+  }
+  console.warn(`Header not found for block hash: ${blockHash}`);
+  return null;
+}
