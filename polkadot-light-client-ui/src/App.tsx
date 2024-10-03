@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Header } from "@polkadot/types/interfaces";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { createMerkleTree } from "./utils/merkle-tree";
@@ -10,6 +10,8 @@ function App() {
   const [tempHeaderBatch, setTempHeaderBatch] = useState<Header[]>([]);
   const [headers, setHeaders] = useState<Header[]>([]);
 
+  const tempBatchRef = useRef<Header[]>([]);
+
   useEffect(() => {
     const wsProvider = new WsProvider("wss://rpc.polkadot.io");
 
@@ -17,12 +19,25 @@ function App() {
       .then((api) => {
         console.log("Connected to Polkadot node");
 
-        api.rpc.chain.subscribeNewHeads((header) => {
+        const unsubscribe = api.rpc.chain.subscribeNewHeads((header) => {
           console.log(`Received block header #${header.number.toNumber()}`);
 
-          setTempHeaderBatch((prevBatch) => [...prevBatch, header]);
-          setHeaders((prevHeaders) => [...prevHeaders, header]);
+          tempBatchRef.current = [...tempBatchRef.current, header];
+
+          if (tempBatchRef.current.length === BATCH_SIZE) {
+            console.log("Batch size reached. Creating Merkle tree...");
+            createMerkleTree(tempBatchRef.current);
+
+            setHeaders((prevHeaders) => [
+              ...prevHeaders,
+              ...tempBatchRef.current,
+            ]);
+
+            tempBatchRef.current = [];
+          }
         });
+
+        return unsubscribe;
       })
       .catch((error) => {
         console.error("Error connecting to Polkadot node:", error);
@@ -32,16 +47,6 @@ function App() {
       wsProvider.disconnect();
     };
   }, []);
-
-  useEffect(() => {
-    if (tempHeaderBatch.length === BATCH_SIZE) {
-      createMerkleTree(tempHeaderBatch);
-
-      setTempHeaderBatch([]);
-    }
-  }, [tempHeaderBatch]);
-
-  console.log(headers);
 
   return (
     <div className="container mx-auto p-4">
