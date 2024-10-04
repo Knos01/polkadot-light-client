@@ -1,16 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { Header } from "@polkadot/types/interfaces";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import {
-  createMerkleTree,
-  getMerkleProof,
-  merkleTrees,
-  verifyMerkleProof,
-} from "./utils/merkle-tree";
+import * as MerkleTreeUtils from "./utils/merkle-tree";
 import HeaderList from "./components/HeaderList";
 import HeaderSearch from "./components/HeaderSearch";
 
-export const BATCH_SIZE = 2;
+export const BATCH_SIZE = 5;
 
 function App() {
   const [headers, setHeaders] = useState<Header[]>([]);
@@ -54,7 +49,7 @@ function App() {
 
           if (tempBatchRef.current.length === BATCH_SIZE) {
             console.log("Batch size reached. Creating Merkle tree...");
-            const { startBlock, endBlock } = createMerkleTree(
+            const { startBlock, endBlock } = MerkleTreeUtils.createMerkleTree(
               tempBatchRef.current
             );
 
@@ -88,10 +83,15 @@ function App() {
   };
 
   const verifyHeader = (header: Header) => {
-    const proofData = getMerkleProof(header);
+    const proofData = MerkleTreeUtils.getMerkleProof(header);
     if (proofData) {
       const { proof, root, tree } = proofData;
-      const isValid = verifyMerkleProof(header, proof, root, tree);
+      const isValid = MerkleTreeUtils.verifyMerkleProof(
+        header,
+        proof,
+        root,
+        tree
+      );
 
       if (isValid) {
         console.log(
@@ -118,7 +118,7 @@ function App() {
           <h1 className="text-2xl font-bold">
             Polkadot Block Headers fetched {headers.length}
           </h1>
-          <h2>Merkle trees generated {merkleTrees.length}</h2>
+          <h2>Merkle trees generated {MerkleTreeUtils.merkleTrees.length}</h2>
         </div>
         {merkleTreeRanges.length > 0 && <HeaderSearch />}
         <div className="flex items-center space-x-3">
