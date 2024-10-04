@@ -102,7 +102,7 @@ function App() {
           </h1>
           <h2>Merkle trees generated {merkleTrees.length}</h2>
         </div>
-        {headers.length > 0 && <HeaderSearch />}
+        {merkleTreeRanges.length > 0 && <HeaderSearch />}
         <HeaderList
           headers={headers}
           merkleTreeRanges={merkleTreeRanges}

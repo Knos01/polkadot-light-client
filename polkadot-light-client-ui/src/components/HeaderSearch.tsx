@@ -4,6 +4,8 @@ import {
   getHeaderByBlockHash,
   LeafData,
 } from "../utils/merkle-tree";
+import { shortenString } from "../utils";
+import Copy from "../assets/svg/Copy";
 
 function HeaderSearch() {
   const [blockNumber, setBlockNumber] = useState("");
@@ -34,8 +36,15 @@ function HeaderSearch() {
     }
   };
 
+  function shortenStrig(
+    header: string,
+    arg1: number
+  ): import("react").ReactNode {
+    throw new Error("Function not implemented.");
+  }
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-3">
       <div className="flex flex-row gap-6">
         <div className="flex flex-row w-1/3 gap-3">
           <input
@@ -69,9 +78,25 @@ function HeaderSearch() {
         </div>
       </div>
       {searchResult && (
-        <div>
-          <p>Block #{searchResult.blockNumber}</p>
-          <p>Hash: {searchResult.blockHash}</p>
+        <div className="p-5 bg-gray-800 rounded-xl">
+          <h2 className="text-xl">Your search result:</h2>
+          <p>
+            Block:{" "}
+            <span className="text-white">#{searchResult.blockNumber}</span>{" "}
+          </p>
+          <p>
+            Hash: <span className="text-white">{searchResult.blockHash}</span>
+          </p>
+          <p className="flex flex-row gap-2">
+            Header hex:{" "}
+            <span className="text-white">
+              {shortenString(searchResult.header, 20)}
+            </span>
+            <Copy
+              className="w-4 h-4 hover:cursor-pointer hover:opacity-70"
+              onClick={() => navigator.clipboard.writeText(searchResult.header)}
+            />
+          </p>
         </div>
       )}
     </div>

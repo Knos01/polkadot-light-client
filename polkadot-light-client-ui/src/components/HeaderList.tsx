@@ -34,15 +34,15 @@ export default function HeaderList(props: Props) {
           <div className="flex items-center justify-between p-2 border-b">
             <div>
               <p className="font-semibold">Block #{blockNumber}</p>
-              <button
-                className="text-sm text-white flex gap-2"
-                onClick={() =>
-                  navigator.clipboard.writeText(header.hash.toHex())
-                }
-              >
+              <div className="text-sm text-white flex gap-2">
                 Hash: {shortenString(header.hash.toHex(), HASH_LENGTH)}{" "}
-                <Copy className="w-4 h-4" />
-              </button>
+                <Copy
+                  className="w-4 h-4 hover:cursor-pointer hover:opacity-70"
+                  onClick={() =>
+                    navigator.clipboard.writeText(header.hash.toHex())
+                  }
+                />
+              </div>
             </div>
 
             {isMerkleTreeReady ? (
