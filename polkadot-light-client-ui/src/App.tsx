@@ -8,6 +8,7 @@ import {
   verifyMerkleProof,
 } from "./utils/merkle-tree";
 import HeaderList from "./components/HeaderList";
+import HeaderSearch from "./components/HeaderSearch";
 
 export const BATCH_SIZE = 5;
 
@@ -94,17 +95,22 @@ function App() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        Polkadot Block Headers fetched {headers.length}
-      </h1>
-      <h2>Merkle trees generated {merkleTrees.length}</h2>
-      <HeaderList
-        headers={headers}
-        merkleTreeRanges={merkleTreeRanges}
-        verifiedProofHeaders={verifiedProofHeaders}
-        verifyHeader={verifyHeader}
-      />
-      Fetching Block Headers...
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2 mb-8">
+          <h1 className="text-2xl font-bold">
+            Polkadot Block Headers fetched {headers.length}
+          </h1>
+          <h2>Merkle trees generated {merkleTrees.length}</h2>
+        </div>
+        {headers.length > 0 && <HeaderSearch />}
+        <HeaderList
+          headers={headers}
+          merkleTreeRanges={merkleTreeRanges}
+          verifiedProofHeaders={verifiedProofHeaders}
+          verifyHeader={verifyHeader}
+        />
+        Fetching Block Headers...
+      </div>
     </div>
   );
 }

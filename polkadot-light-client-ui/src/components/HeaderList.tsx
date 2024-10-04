@@ -35,7 +35,7 @@ export default function HeaderList(props: Props) {
             <div>
               <p className="font-semibold">Block #{blockNumber}</p>
               <button
-                className="text-sm text-gray-600 flex gap-2"
+                className="text-sm text-white flex gap-2"
                 onClick={() =>
                   navigator.clipboard.writeText(header.hash.toHex())
                 }
