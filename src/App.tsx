@@ -10,7 +10,7 @@ import {
 import HeaderList from "./components/HeaderList";
 import HeaderSearch from "./components/HeaderSearch";
 
-export const BATCH_SIZE = 5;
+export const BATCH_SIZE = 2;
 
 function App() {
   const [headers, setHeaders] = useState<Header[]>([]);
@@ -22,6 +22,13 @@ function App() {
   );
   const tempBatchRef = useRef<Header[]>([]);
   const processedBlocks = new Set<number>();
+  const [batchVerificationEnabled, setBatchVerificationEnabled] =
+    useState(false);
+  const batchVerificationRef = useRef(batchVerificationEnabled);
+
+  useEffect(() => {
+    batchVerificationRef.current = batchVerificationEnabled;
+  }, [batchVerificationEnabled]);
 
   useEffect(() => {
     const wsProvider = new WsProvider("wss://rpc.polkadot.io");
@@ -57,6 +64,7 @@ function App() {
             ]);
 
             const batchToVerify = [...tempBatchRef.current];
+
             batchVerifyHeaders(batchToVerify);
 
             tempBatchRef.current = [];
@@ -75,6 +83,7 @@ function App() {
   }, []);
 
   const batchVerifyHeaders = async (batch: Header[]) => {
+    if (!batchVerificationRef.current) return;
     await Promise.all(batch.map(async (header) => verifyHeader(header)));
   };
 
@@ -112,6 +121,21 @@ function App() {
           <h2>Merkle trees generated {merkleTrees.length}</h2>
         </div>
         {merkleTreeRanges.length > 0 && <HeaderSearch />}
+        <div className="flex items-center space-x-3">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              onClick={() =>
+                setBatchVerificationEnabled(!batchVerificationEnabled)
+              }
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
+            <div className="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full transition-transform peer-checked:translate-x-full"></div>
+          </label>
+
+          <span className="text-lg">Automatic batch verification</span>
+        </div>
         <HeaderList
           headers={headers}
           merkleTreeRanges={merkleTreeRanges}
