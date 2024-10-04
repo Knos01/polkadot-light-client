@@ -4,12 +4,13 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { createMerkleTree } from "./utils/merkle-tree";
 import HeaderList from "./components/HeaderList";
 
-const BATCH_SIZE = 5;
+export const BATCH_SIZE = 5;
 
 function App() {
-  const [tempHeaderBatch, setTempHeaderBatch] = useState<Header[]>([]);
   const [headers, setHeaders] = useState<Header[]>([]);
-
+  const [merkleTreeRanges, setMerkleTreeRanges] = useState<
+    { startBlock: number; endBlock: number }[]
+  >([]);
   const tempBatchRef = useRef<Header[]>([]);
 
   useEffect(() => {
@@ -24,13 +25,17 @@ function App() {
 
           tempBatchRef.current = [...tempBatchRef.current, header];
 
+          setHeaders((prevHeaders) => [...prevHeaders, header]);
+
           if (tempBatchRef.current.length === BATCH_SIZE) {
             console.log("Batch size reached. Creating Merkle tree...");
-            createMerkleTree(tempBatchRef.current);
+            const { startBlock, endBlock } = createMerkleTree(
+              tempBatchRef.current
+            );
 
-            setHeaders((prevHeaders) => [
-              ...prevHeaders,
-              ...tempBatchRef.current,
+            setMerkleTreeRanges((prevRanges) => [
+              ...prevRanges,
+              { startBlock, endBlock },
             ]);
 
             tempBatchRef.current = [];
@@ -51,7 +56,7 @@ function App() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Polkadot Block Headers</h1>
-      <HeaderList headers={headers} />
+      <HeaderList headers={headers} merkleTreeRanges={merkleTreeRanges} />
     </div>
   );
 }

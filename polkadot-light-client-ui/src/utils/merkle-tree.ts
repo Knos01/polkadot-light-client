@@ -18,18 +18,15 @@ export function createMerkleTree(headers: Header[]) {
     Buffer.from(SHA256(data).toString(), "hex")
   );
 
-  const levels = merkleTree.getLayers();
-  levels.forEach((level, index) => {
-    console.log(
-      `Level ${index}:`,
-      level.map((node) => node.toString("hex"))
-    );
-  });
-
   const root = merkleTree.getRoot().toString("hex");
   console.log("Merkle Tree Root (creation):", root);
 
   merkleTrees.push({ tree: merkleTree, leaves, root });
+
+  const startBlock = headers[0].number.toNumber();
+  const endBlock = headers[headers.length - 1].number.toNumber();
+
+  return { startBlock, endBlock };
 }
 
 export function getMerkleProof(
