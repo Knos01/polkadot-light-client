@@ -36,13 +36,6 @@ function HeaderSearch() {
     }
   };
 
-  function shortenStrig(
-    header: string,
-    arg1: number
-  ): import("react").ReactNode {
-    throw new Error("Function not implemented.");
-  }
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-row gap-6">

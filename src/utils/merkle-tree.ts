@@ -37,7 +37,7 @@ export function getMerkleProof(
   for (const { tree, leaves, root } of merkleTrees) {
     const index = leaves.findIndex((leaf) => leaf.hash === leafHash);
     if (index !== -1) {
-      const proof = tree.getHexProof(Buffer.from(leafHash, "hex")); // Ensure Buffer is used for proof
+      const proof = tree.getHexProof(Buffer.from(leafHash, "hex"));
       console.log("Merkle Proof (generation):", proof);
       return { proof, root, tree };
     }

@@ -2,6 +2,7 @@ import { Header } from "@polkadot/types/interfaces";
 import CheckMark from "../assets/svg/CheckMark";
 import { shortenString } from "../utils";
 import Copy from "../assets/svg/Copy";
+import Clock from "../assets/svg/Clock";
 
 interface Props {
   headers: Header[];
@@ -52,18 +53,7 @@ export default function HeaderList(props: Props) {
             ) : (
               <span className="flex gap-2">
                 Waiting for Merkle Tree generation
-                <svg
-                  className="h-6 w-6 text-yellow-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <Clock className="w-6 h-6" />
               </span>
             )}
 
