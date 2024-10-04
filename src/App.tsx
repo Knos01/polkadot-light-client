@@ -17,10 +17,11 @@ function App() {
   const [merkleTreeRanges, setMerkleTreeRanges] = useState<
     { startBlock: number; endBlock: number }[]
   >([]);
-  const [verifiedProofHeaders, setVerifiedProofHeaders] = useState<Set<number>>(
+  const [verifiedProofHeaders, setVerifiedProofHeaders] = useState<Set<string>>(
     new Set()
   );
   const tempBatchRef = useRef<Header[]>([]);
+  const processedBlocks = new Set<number>();
 
   useEffect(() => {
     const wsProvider = new WsProvider("wss://rpc.polkadot.io");
@@ -30,7 +31,15 @@ function App() {
         console.log("Connected to Polkadot node");
 
         const unsubscribe = api.rpc.chain.subscribeNewHeads((header) => {
-          console.log(`Received block header #${header.number.toNumber()}`);
+          const blockNumber = header.number.toNumber();
+          console.log(`Received block header #${blockNumber}`);
+
+          if (processedBlocks.has(blockNumber)) {
+            console.log(`Duplicate block #${blockNumber} ignored.`);
+            return;
+          }
+
+          processedBlocks.add(blockNumber);
 
           tempBatchRef.current = [...tempBatchRef.current, header];
 
@@ -82,7 +91,7 @@ function App() {
 
         setVerifiedProofHeaders((prev) => {
           const updatedSet = new Set(prev);
-          updatedSet.add(header.number.toNumber());
+          updatedSet.add(header.hash.toHex());
           return updatedSet;
         });
       } else {

@@ -1,17 +1,13 @@
-export default function CheckMark() {
-  return (
-    <svg
-      className="h-6 w-6 text-blue-500"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M5 13l4 4L19 7"
-      />
-    </svg>
-  );
-}
+import { SVGProps } from "react";
+
+const CheckMark = (props: SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path
+      fill="#1988F7"
+      d="M10.5087 17.5662C9.92581 18.1454 9.13895 18.4688 8.31998 18.4659C7.501 18.463 6.71644 18.1339 6.13767 17.5506L0.627999 12.016C-0.224501 11.1578 -0.209001 9.76909 0.674499 8.94208C1.5115 8.13068 2.8445 8.16189 3.6505 8.97329L8.32317 13.6652L18.2897 3.63196C19.1267 2.78935 20.4752 2.78935 21.3122 3.63196L21.3742 3.69437C22.2112 4.53698 22.2112 5.91012 21.3587 6.75273L10.5087 17.5662Z"
+    />
+    ;
+  </svg>
+);
+
+export default CheckMark;

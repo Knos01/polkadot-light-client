@@ -7,7 +7,7 @@ interface Props {
   headers: Header[];
   merkleTreeRanges: { startBlock: number; endBlock: number }[];
   verifyHeader: (header: Header) => void;
-  verifiedProofHeaders: Set<number>;
+  verifiedProofHeaders: Set<string>;
 }
 
 const HASH_LENGTH = 10;
@@ -27,7 +27,8 @@ export default function HeaderList(props: Props) {
     <div>
       {headers.map((header) => {
         const blockNumber = header.number.toNumber();
-        const proofVerified = verifiedProofHeaders.has(blockNumber);
+        const blockHash = header.hash.toHex();
+        const proofVerified = verifiedProofHeaders.has(blockHash);
         const isMerkleTreeReady = isMerkleTreeCreatedForHeader(blockNumber);
 
         return (
@@ -35,20 +36,18 @@ export default function HeaderList(props: Props) {
             <div>
               <p className="font-semibold">Block #{blockNumber}</p>
               <div className="text-sm text-white flex gap-2">
-                Hash: {shortenString(header.hash.toHex(), HASH_LENGTH)}{" "}
+                Hash: {shortenString(blockHash, HASH_LENGTH)}{" "}
                 <Copy
                   className="w-4 h-4 hover:cursor-pointer hover:opacity-70"
-                  onClick={() =>
-                    navigator.clipboard.writeText(header.hash.toHex())
-                  }
+                  onClick={() => navigator.clipboard.writeText(blockHash)}
                 />
               </div>
             </div>
 
             {isMerkleTreeReady ? (
-              <span className="flex gap-2">
+              <span className="flex gap-2 items-center">
                 Stored in Merkle Tree
-                <CheckMark />
+                <CheckMark className="w-4 h-4" />
               </span>
             ) : (
               <span className="flex gap-2">
@@ -81,9 +80,9 @@ export default function HeaderList(props: Props) {
                 Verify Merkle Proof
               </button>
             ) : (
-              <span className="flex gap-2">
+              <span className="flex gap-2 items-center">
                 Proof verified
-                <CheckMark />
+                <CheckMark className="w-4 h-4" />
               </span>
             )}
           </div>
