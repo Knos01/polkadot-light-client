@@ -1,7 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { Header } from "@polkadot/types/interfaces";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { createMerkleTree } from "./utils/merkle-tree";
+import {
+  createMerkleTree,
+  getMerkleProof,
+  merkleTrees,
+  verifyMerkleProof,
+} from "./utils/merkle-tree";
 import HeaderList from "./components/HeaderList";
 
 export const BATCH_SIZE = 5;
@@ -11,6 +16,9 @@ function App() {
   const [merkleTreeRanges, setMerkleTreeRanges] = useState<
     { startBlock: number; endBlock: number }[]
   >([]);
+  const [verifiedProofHeaders, setVerifiedProofHeaders] = useState<Set<number>>(
+    new Set()
+  );
   const tempBatchRef = useRef<Header[]>([]);
 
   useEffect(() => {
@@ -38,6 +46,9 @@ function App() {
               { startBlock, endBlock },
             ]);
 
+            const batchToVerify = [...tempBatchRef.current];
+            batchVerifyHeaders(batchToVerify);
+
             tempBatchRef.current = [];
           }
         });
@@ -53,10 +64,47 @@ function App() {
     };
   }, []);
 
+  const batchVerifyHeaders = async (batch: Header[]) => {
+    await Promise.all(batch.map(async (header) => verifyHeader(header)));
+  };
+
+  const verifyHeader = (header: Header) => {
+    const proofData = getMerkleProof(header);
+    if (proofData) {
+      const { proof, root, tree } = proofData;
+      const isValid = verifyMerkleProof(header, proof, root, tree);
+
+      if (isValid) {
+        console.log(
+          `Merkle proof verified for block #${header.number.toNumber()}`
+        );
+
+        setVerifiedProofHeaders((prev) => {
+          const updatedSet = new Set(prev);
+          updatedSet.add(header.number.toNumber());
+          return updatedSet;
+        });
+      } else {
+        console.warn(
+          `Merkle proof verification failed for block #${header.number.toNumber()}`
+        );
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Polkadot Block Headers</h1>
-      <HeaderList headers={headers} merkleTreeRanges={merkleTreeRanges} />
+      <h1 className="text-2xl font-bold mb-4">
+        Polkadot Block Headers fetched {headers.length}
+      </h1>
+      <h2>Merkle trees generated {merkleTrees.length}</h2>
+      <HeaderList
+        headers={headers}
+        merkleTreeRanges={merkleTreeRanges}
+        verifiedProofHeaders={verifiedProofHeaders}
+        verifyHeader={verifyHeader}
+      />
+      Fetching Block Headers...
     </div>
   );
 }

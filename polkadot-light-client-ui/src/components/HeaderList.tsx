@@ -1,6 +1,4 @@
 import { Header } from "@polkadot/types/interfaces";
-import * as MerkleTreeUtils from "../utils/merkle-tree";
-import { useState } from "react";
 import CheckMark from "../assets/svg/CheckMark";
 import { shortenString } from "../utils";
 import Copy from "../assets/svg/Copy";
@@ -8,49 +6,15 @@ import Copy from "../assets/svg/Copy";
 interface Props {
   headers: Header[];
   merkleTreeRanges: { startBlock: number; endBlock: number }[];
+  verifyHeader: (header: Header) => void;
+  verifiedProofHeaders: Set<number>;
 }
 
 const HASH_LENGTH = 10;
 
 export default function HeaderList(props: Props) {
-  const { headers, merkleTreeRanges } = props;
-  const [verifiedProofHeaders, setVerifiedProofHeaders] = useState<Set<number>>(
-    new Set()
-  );
-
-  const verifyProof = (header: Header) => {
-    const proofData = MerkleTreeUtils.getMerkleProof(header);
-    if (proofData) {
-      const { proof, root, tree } = proofData;
-
-      const isValid = MerkleTreeUtils.verifyMerkleProof(
-        header,
-        proof,
-        root,
-        tree
-      );
-
-      if (isValid) {
-        console.log(
-          `Merkle proof verified for block #${header.number.toNumber()}`
-        );
-
-        setVerifiedProofHeaders((prev) => {
-          const updatedSet = new Set(prev);
-          updatedSet.add(header.number.toNumber());
-          return updatedSet;
-        });
-      } else {
-        console.warn(
-          `Merkle proof verification failed for block #${header.number.toNumber()}`
-        );
-      }
-    } else {
-      console.warn(
-        `No Merkle proof found for block #${header.number.toNumber()}`
-      );
-    }
-  };
+  const { headers, merkleTreeRanges, verifyHeader, verifiedProofHeaders } =
+    props;
 
   const isMerkleTreeCreatedForHeader = (blockNumber: number) => {
     return merkleTreeRanges.some(
@@ -111,7 +75,7 @@ export default function HeaderList(props: Props) {
                     ? "bg-blue-500 hover:bg-blue-600"
                     : "bg-gray-500"
                 } text-white px-2 py-1 rounded `}
-                onClick={() => verifyProof(header)}
+                onClick={() => verifyHeader(header)}
                 disabled={!isMerkleTreeReady}
               >
                 Verify Merkle Proof
