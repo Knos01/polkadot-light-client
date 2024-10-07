@@ -8,6 +8,8 @@ The Merkle Trees are used to generate inclusion proofs for each block header, wh
 
 Such verification could be either automatic in batch or manually triggered by the user.
 
+Project is deployed here -> [Polkadot Light Client](https://polkadot-light-client-snowy.vercel.app/)
+
 ---
 
 ## Feature overview
