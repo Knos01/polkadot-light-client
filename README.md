@@ -12,7 +12,7 @@ Project is deployed here -> [Polkadot Light Client](https://polkadot-light-clien
 
 ---
 
-## Feature overview
+## Application overview
 
 1. **Batching of Block Headers**: The application listens to incoming Polkadot block headers and groups them in batches of a configurable size. Once the batch size limit is reached, a Merkle Tree is generated for that batch, and the headers are stored inside it.
 2. **Merkle Tree Storage**: The generated Merkle Trees are stored in-memory and mapped to their corresponding block header ranges (start block to end block).
@@ -21,6 +21,50 @@ Project is deployed here -> [Polkadot Light Client](https://polkadot-light-clien
 5. **Proof Verification**: The generated Merkle proofs can be verified against the Merkle Tree root to ensure validity.
 6. **UI Integration**: The UI provides real-time feedback by showing the block headers, their inclusion in Merkle Trees, and the verification status of the proofs.
 7. **Batch Verification**: The application allows for asynchronous batch verification of headers.
+
+---
+
+## Features and Design Choices
+
+### 1. **Batching Block Headers**
+
+- The application listens to new Polkadot block headers in real time and groups them into batches of **5** (default `BATCH_SIZE`). Once a batch is complete, it is used to create a Merkle Tree.
+- Grouping headers into batches reduces the computational overhead associated with Merkle Tree construction for each individual block.
+
+**Alternative Approach**:
+
+I thought about using a different number of headers per batch, but `5` was chosen as a balance between performance and efficiency.
+
+- A smaller batch would result in a faster time for process headers, making the system more responsive. At the same time, it would mean more frequent Merkle Tree generation, which could be computationally expensive and increase memory cost.
+- A bigger batch would reduce the number of Merkle Trees generated, but it could introduce delays before a batch is finalized.
+
+### 2. **Merkle Tree Storage**
+
+The current implementation uses an **in-memory** structure where each batch of headers is stored as leaves in a Merkle tree, and the corresponding tree and root are stored in the `merkleTrees` array. Each Merkle Tree is tied to a range of block numbers for easy querying.
+
+### 3. **Querying Block Headers**
+
+The querying mechanism consists of two key functions:
+
+- `getHeaderByBlockNumber(blockNumber: number)`: it iterates through the leaves of all the Merkle trees and returns the header that matches the given block number.
+- `getHeaderByBlockHash(blockHash: string)`: Similarly, this function traverses through the leaves to find the header with the matching block hash.
+
+**Why didn't I use the merkle tree for queries**:
+
+The Merkle Trees are mostly used for proof generation and verification, which is their primary purpose. I believe they are not optimized for querying data. The current approach indeed is `O(n)`, but it is simple and efficient for the current scale.
+
+Merkle Patricia Trie would have been another option for queries, since it offers key-value storage with `Olog((n))` complexity. For this small project, I believe it would have been an overkill to implement this, since it requires more logic and structure.
+
+### 4. **Merkle Proof Generation**
+
+For every block header stored in a Merkle Tree, an inclusion proof can be generated and verified against the Merkle root. The Merkle Tree ensures that the data is not tampered with.
+
+### 5. **Proof Verification**
+
+The inclusion proofs generated for block headers can be verified against the Merkle Tree root providing a secure way to validate that a block header is part of the dataset. Those proof are generated just before the user decide to verify them.
+
+The UI displays the block headers and their inclusion status in Merkle Trees. Users can manually verify the proof or enable batch verification, which is handled asynchronously. I wanted to give this 2 options so that
+the user could see also the process of verification.
 
 ---
 
@@ -77,49 +121,3 @@ Project is deployed here -> [Polkadot Light Client](https://polkadot-light-clien
    Open your browser and navigate to `http://localhost:3000`. The application will begin fetching and displaying block headers from the Polkadot blockchain.
 
 ---
-
-## Features and Design Choices
-
-### 1. **Batching Block Headers**
-
-- The application listens to new Polkadot block headers in real time and groups them into batches of **5** (default `BATCH_SIZE`). Once a batch is complete, it is used to create a Merkle Tree.
-- Grouping headers into batches reduces the computational overhead associated with Merkle Tree construction for each individual block.
-
-**Alternative Approach**:
-
-I thought about using a different number of headers per batch, but `5` was chosen as a balance between performance and efficiency.
-
-- A smaller batch would result in a faster time for process headers, making the system more responsive. At the same time, it would mean more frequent Merkle Tree generation, which could be computationally expensive and increase memory cost.
-- A bigger batch would reduce the number of Merkle Trees generated, but it could introduce delays before a batch is finalized.
-
-### 2. **Merkle Tree Storage**
-
-The current implementation uses an **in-memory** structure where each batch of headers is stored as leaves in a Merkle tree, and the corresponding tree and root are stored in the `merkleTrees` array. Each Merkle Tree is tied to a range of block numbers for easy querying.
-
-### 3. **Querying Block Headers**
-
-The querying mechanism consists of two key functions:
-
-- `getHeaderByBlockNumber(blockNumber: number)`: it iterates through the leaves of all the Merkle trees and returns the header that matches the given block number.
-- `getHeaderByBlockHash(blockHash: string)`: Similarly, this function traverses through the leaves to find the header with the matching block hash.
-
-**Why didn't I use the merkle tree for queries**:
-
-The Merkle Trees are mostly used for proof generation and verification, which is their primary purpose. I believe they are not optimized for querying data. The current approach indeed is `O(n)`, but it is simple and efficient for the current scale.
-
-Merkle Patricia Trie would have been another option for queries, since it offers key-value storage with `Olog((n))` complexity. For this small project, I believe it would have been an overkill to implement this, since it requires more logic and structure.
-
-### 4. **Merkle Proof Generation**
-
-For every block header stored in a Merkle Tree, an inclusion proof can be generated and verified against the Merkle root. The Merkle Tree ensures that the data is not tampered with.
-
-### 5. **Proof Verification**
-
-The inclusion proofs generated for block headers can be verified against the Merkle Tree root providing a secure way to validate that a block header is part of the dataset. Those proof are generated just before the user decide to verify them.
-
-The UI displays the block headers and their inclusion status in Merkle Trees. Users can manually verify the proof or enable batch verification, which is handled asynchronously. I wanted to give this 2 options so that
-the user could see also the process of verification.
-
-## Conclusion
-
-This project was really fun to build and demonstrates an efficient Polkadot block header light client that stores and verifies block headers using Merkle Trees. It may have some improvements to be done, but I believe it is a good start for understaing how Polkadot works and how to build a light client for it.
